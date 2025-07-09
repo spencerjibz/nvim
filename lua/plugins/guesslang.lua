@@ -1,0 +1,148 @@
+-- return {
+--   "glacambre/firenvim",
+--   build = ":call firenvim#install(0)",
+--   lazy = false,
+-- config = function()
+--   -- Firenvim Settings
+--   vim.g.firenvim_config = {
+--     globalSettings = { alt = "all" },
+--     localSettings = {
+--       ['.*'] = {
+--         cmdline = "neovim",
+--         content = "text", -- Will be overridden dynamically by guesslang
+--         priority = 0,
+--         selector = "textarea",
+--         takeover = "always",
+--         filename = '{hostname}_{pathname%10}_{timestamp%6}.{extension}' -- Custom filename format
+--       }
+--     }
+--   }
+--
+--   -- Function to detect language using guesslang binary
+--   local function detect_language_with_guesslang(buffer)
+--     -- Get the current content of the buffer
+--     local content = vim.api.nvim_buf_get_lines(buffer, 0, -1, false)
+--     local text = table.concat(content, "\n")
+--
+--     -- Call the guesslang binary with the text content as input
+--     local handle = io.popen('echo "' .. text .. '" | guesslang --json')
+--     local result = handle:read("*a")
+--     handle:close()
+--
+--     -- If there's an error in running the command or no result
+--     if not result or result == "" then
+--       vim.notify("⚠️ Failed to detect language using guesslang.", vim.log.levels.ERROR)
+--       return
+--     end
+--
+--     -- Parse the JSON output from guesslang
+--     local success, parsed_result = pcall(vim.fn.json_decode, result)
+--     if not success or not parsed_result or not parsed_result.language then
+--       vim.notify("⚠️ Failed to parse guesslang output.", vim.log.levels.ERROR)
+--       return
+--     end
+--
+--     -- Get the detected language
+--     local detected_lang = parsed_result.language
+--
+--     -- Map the detected language to a filetype
+--     local lang_map = {
+--       python = "python",
+--       javascript = "javascript",
+--       typescript = "typescript",
+--       rust = "rust",
+--       c = "c",
+--       cpp = "cpp",
+--       lua = "lua",
+--       html = "html",
+--       css = "css",
+--       go = "go",
+--       java = "java",
+--       shell = "sh",
+--       php = "php",
+--       markdown = "markdown",
+--       json = "json",
+--     }
+--
+--     -- Get the filetype based on the detected language
+--     local detected_ft = lang_map[detected_lang] or "text"
+--
+--     -- Set the filetype for the buffer
+--     vim.bo.filetype = detected_ft
+--     vim.cmd("setlocal filetype=" .. detected_ft)
+--
+--     -- Update Firenvim content type based on detected language
+--     local content_map = {
+--       python = "python",
+--       javascript = "javascript",
+--       typescript = "typescript",
+--       rust = "rust",
+--       c = "c",
+--       cpp = "cpp",
+--       lua = "lua",
+--       html = "html",
+--       css = "css",
+--       go = "go",
+--       java = "java",
+--       sh = "sh",
+--       php = "php",
+--       markdown = "markdown",
+--       json = "json",
+--       text = "text",
+--     }
+--     vim.g.firenvim_config.localSettings[".*"].content = content_map[detected_ft]
+--
+--     -- Show a notification with the detected language
+--     vim.notify("🔥 Detected language: " .. detected_ft, vim.log.levels.INFO)
+--
+--     -- Update filename format with the detected language extension
+--     vim.g.firenvim_config.localSettings[".*"].filename = '{hostname}_{pathname%10}_{timestamp%6}.' .. detected_ft
+--
+--     -- Enable LSP for the detected language (if applicable)
+--     local lsp_attach_success, lsp_attach_err = pcall(function()
+--       local lspconfig = require('lspconfig')
+--
+--       -- If the detected language has an LSP configuration
+--       if lspconfig[detected_ft] then
+--         -- Setup LSP server for the detected language
+--         lspconfig[detected_ft].setup({})
+--         vim.notify("✅ LSP started for " .. detected_ft, vim.log.levels.INFO)
+--       else
+--         vim.notify("⚠️ No LSP found for " .. detected_ft, vim.log.levels.WARN)
+--       end
+--     end)
+--
+--     -- Catch any errors during LSP setup
+--     if not lsp_attach_success then
+--       vim.notify("⚠️ Error starting LSP for " .. detected_ft .. ": " .. lsp_attach_err, vim.log.levels.ERROR)
+--     end
+--   end
+--
+--   -- InsertEnter event to trigger language detection when entering insert mode
+--   vim.api.nvim_create_autocmd("InsertEnter", {
+--     callback = function(event)
+--       -- Fetch the current buffer when entering insert mode
+--       local buffer = vim.api.nvim_get_current_buf()
+--
+--       -- Trigger language detection using guesslang
+--       detect_language_with_guesslang(buffer)
+--     end,
+--   })
+--
+--   -- Sync page content with Neovim buffer on text change (fixed)
+--   vim.api.nvim_create_autocmd("TextChanged", {
+--     pattern = "*",
+--     callback = function()
+--       -- Only write if the buffer is not 'nofile' and is editable
+--       if vim.bo.buftype ~= "nofile" and vim.bo.buftype ~= "nowrite" then
+--         vim.cmd("write")
+--         print("💬 Page synced with buffer!")
+--       else
+--         print("⚠️ Buffer is not writable. Sync skipped.")
+--       end
+--     end,
+--   })
+-- end,
+-- }
+
+return {}
