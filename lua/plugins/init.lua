@@ -293,6 +293,10 @@ return {
         "rust",
         "toml", -- optional, useful for Cargo.toml
         "yaml",
+        "c",
+        "cpp",
+        "cmake",
+        "make",
       },
       highlight = {
         enable = true,

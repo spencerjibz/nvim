@@ -22,6 +22,7 @@ end, { desc = "Update all dependencies in toml file" })
 --- key mappings for rust;
 ---
 -- Disable continuations
+--
 map("n", "<Leader>o", "o<Esc>^Da")
 map("n", "<Leader>O", "O<Esc>^Da")
 
