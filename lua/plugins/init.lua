@@ -18,6 +18,12 @@ return {
       require("nvim-ts-autotag").setup()
     end,
   },
+  {
+    "marcosantos98/clang-format.nvim",
+    config = function()
+      require("clang-format").setup { clangFormatPath = "c:/msys64/mingw64/bin/clang-format.exe" }
+    end,
+  },
 
   {
     "zbirenbaum/copilot-cmp",
