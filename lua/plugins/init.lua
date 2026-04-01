@@ -1,4 +1,5 @@
 return {
+  { import = "nvchad.blink.lazyspec" },
   {
     "zbirenbaum/copilot.lua",
     cmd = "Copilot", -- lazy-load on Copilot command
@@ -18,12 +19,12 @@ return {
       require("nvim-ts-autotag").setup()
     end,
   },
-  {
-    "marcosantos98/clang-format.nvim",
-    config = function()
-      require("clang-format").setup { clangFormatPath = "c:/msys64/mingw64/bin/clang-format.exe" }
-    end,
-  },
+  -- {
+  --   "marcosantos98/clang-format.nvim",
+  --   config = function()
+  --     require("clang-format").setup { clangFormatPath = "c:/msys64/mingw64/bin/clang-format.exe" }
+  --   end,
+  -- },
 
   {
     "zbirenbaum/copilot-cmp",
@@ -67,8 +68,9 @@ return {
   },
   { -- Fuzzy Finder (files, lsp, etc)
     "nvim-telescope/telescope.nvim",
+    commit = nil,
     event = "VimEnter",
-    branch = "0.1.x",
+    version = "*",
     dependencies = {
       "nvim-lua/plenary.nvim",
       { -- If encountering errors, see telescope-fzf-native README for installation instructions
@@ -201,7 +203,7 @@ return {
   },
   {
     "mrcjkb/rustaceanvim",
-    version = "^6", -- Use stable version
+    version = "^8", -- Use stable version
     lazy = false,
     ft = { "rust", "text" }, -- Load only for Rust files
     config = function()
@@ -225,8 +227,14 @@ return {
           default_settings = {
             ["rust-analyzer"] = {
               cargo = { allFeatures = true },
-              -- checkOnSave = { command = "clippy" },
-              -- diagnostics = { enable = true },
+              checkOnSave = true,
+              diagnostics = { experimental = { enable = true } },
+              inlayHints = {
+                bindingModeHints = { enable = true },
+                closureReturnTypeHints = { enable = "always" },
+                lifetimeElisionHints = { enable = "skip_trivial", useParameterNames = true },
+                maxLength = nil, -- Zed doesn't truncate hints by default
+              },
             },
           },
           dap = {
@@ -299,10 +307,10 @@ return {
         "rust",
         "toml", -- optional, useful for Cargo.toml
         "yaml",
-        "c",
-        "cpp",
-        "cmake",
-        "make",
+        -- "c",
+        -- "cpp",
+        -- "cmake",
+        -- "make",
       },
       highlight = {
         enable = true,
