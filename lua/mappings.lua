@@ -7,7 +7,6 @@ local map = vim.keymap.set
 map("n", ";", ":", { desc = "CMD enter command mode" })
 map("i", "jk", "<ESC>")
 
-map("n", "<leader>pr", '"_dP')
 -- map({ "n", "i", "v" }, "<C-s>", "<cmd> w <cr>")
 
 map("n", "<leader>br", ":Bacon<CR>", { desc = "Run Bacon" })
@@ -40,64 +39,16 @@ map("n", "<s-tab>", ":tabprev<Return>")
 -- Mappings for quick fix list
 map("n", "<M-J>", "<cmd> cnext<CR>")
 map("n", "<M-K>", "<cmd> cprev<CR>")
-
--- Neotest key mappings
-map("n", "<leader>tn", function()
-    pcall(function()
-        require("neotest").run.run()
-    end)
+-- Neo tests mappings
+map("n", "<leader>tr", function()
+    require("neotest").run.run()
 end, { desc = "Run Nearest Test" })
-
 map("n", "<leader>tf", function()
-    pcall(function()
-        require("neotest").run.run(vim.fn.expand "%")
-    end)
+    require("neotest").run.run(vim.fn.expand "%")
 end, { desc = "Run File Tests" })
-
 map("n", "<leader>ts", function()
-    pcall(function()
-        require("neotest").run.stop()
-    end)
-end, { desc = "Stop Running Tests" })
-
+    require("neotest").summary.toggle()
+end, { desc = "Toggle Test Summary" })
 map("n", "<leader>to", function()
-    local ok = pcall(function()
-        require("neotest").output.open { enter = true }
-    end)
-    if not ok then
-        vim.schedule(function()
-            vim.notify("neotest: failed to open output", vim.log.levels.WARN)
-        end)
-    end
+    require("neotest").output.open { enter = true }
 end, { desc = "Show Test Output" })
-
-map("n", "<leader>tS", function()
-    -- Open summary in right panel; try to lazy-load neotest if needed
-    local summary_mod
-    local ok = pcall(function()
-        summary_mod = require("neotest.summary")
-    end)
-    if not ok or not summary_mod then
-        -- neotest or its adapters are not installed/loaded. Inform the user.
-        vim.schedule(function()
-            vim.notify(
-            "neotest: plugin not installed or loaded. Run ':Lazy sync' or install 'nvim-neotest/neotest' and 'rouge8/neotest-rust'",
-                vim.log.levels.WARN)
-        end)
-        return
-    end
-
-    local opened, err = pcall(summary_mod.open, { enter = true })
-    if not opened then
-        vim.schedule(function()
-            vim.notify("neotest: failed to open summary: " .. tostring(err), vim.log.levels.WARN)
-        end)
-        return
-    end
-
-    -- Move the newly opened summary window to the far right and set width
-    vim.defer_fn(function()
-        pcall(vim.cmd, "wincmd L")
-        pcall(vim.cmd, "vertical resize 45")
-    end, 80)
-end, { desc = "Open Test Summary (right panel)" })
