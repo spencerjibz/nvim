@@ -8,67 +8,61 @@ return {
             "nvim-lua/plenary.nvim",
             "antoinemadec/FixCursorHold.nvim",
             "nvim-treesitter/nvim-treesitter",
-            -- Rust adapters: prefer rustaceanvim integration but keep neotest-rust as a fallback
+            -- Use rustaceanvim's neotest adapter (preferred). Do NOT combine with neotest-rust.
             "mrcjkb/rustaceanvim",
-            "rouge8/neotest-rust",
         },
         config = function()
             local adapters = {}
 
-            -- Try to load rustaceanvim's neotest adapter first (preferred integration)
+            -- Try to require the rustaceanvim neotest adapter now
             local ok_ra, ra_adapter = pcall(require, "rustaceanvim.neotest")
             if ok_ra and ra_adapter and type(ra_adapter) == "table" then
-                -- Build a safe proxy that delegates to the real adapter but guards
-                -- against nil 'results' and runtime errors coming from async contexts.
-                local proxy = setmetatable({}, { __index = ra_adapter })
-
-                -- Wrap results to avoid returning nil and to schedule UI calls safely
+                -- If the adapter exposes a results function, schedule it to avoid fast-event UI calls
                 if type(ra_adapter.results) == "function" then
-                    proxy.results = function(...)
-                        local ok, res = pcall(ra_adapter.results, ...)
-                        if not ok or res == nil then
-                            -- Return empty results to let neotest continue without error
-                            return {}
-                        end
-                        return res
-                    end
-                else
-                    proxy.results = function()
-                        return {}
-                    end
+                    ra_adapter.results = vim.schedule_wrap(ra_adapter.results)
                 end
+                table.insert(adapters, ra_adapter)
 
-                -- Wrap run to surface errors safely
-                if type(ra_adapter.run) == "function" then
-                    proxy.run = function(...)
-                        local ok, err = pcall(ra_adapter.run, ...)
-                        if not ok then
-                            vim.schedule(function()
-                                vim.notify("rustaceanvim.neotest.run failed: " .. tostring(err), vim.log.levels.ERROR)
-                            end)
+                -- Register neotest immediately with rustaceanvim adapter
+                require("neotest").setup {
+                    adapters = adapters,
+                    log_level = vim.log.levels.ERROR,
+                    quickfix = { enabled = false },
+                    summary = { open = false },
+                    output = { enabled = true, open_on_run = false },
+                    icons = { running = "", passed = "", failed = "", skipped = "" },
+                }
+            else
+                -- If adapter isn't available yet (lazy load timing), setup neotest minimally
+                require("neotest").setup {
+                    adapters = {},
+                    log_level = vim.log.levels.ERROR,
+                    quickfix = { enabled = false },
+                    summary = { open = false },
+                    output = { enabled = true, open_on_run = false },
+                    icons = { running = "", passed = "", failed = "", skipped = "" },
+                }
+
+                -- Try to attach the adapter later when Rust files are opened
+                local group = vim.api.nvim_create_augroup("NeotestRustAdapter", { clear = true })
+                vim.api.nvim_create_autocmd({ "BufReadPost", "FileType" }, {
+                    pattern = "*.rs",
+                    group = group,
+                    callback = function()
+                        local ok2, ra2 = pcall(require, "rustaceanvim.neotest")
+                        if ok2 and ra2 and type(ra2) == "table" then
+                            if type(ra2.results) == "function" then
+                                ra2.results = vim.schedule_wrap(ra2.results)
+                            end
+                            local current = require("neotest").config or {}
+                            local adapters = current.adapters or {}
+                            table.insert(adapters, ra2)
+                            require("neotest").setup(vim.tbl_extend("force", current, { adapters = adapters }))
+                            vim.api.nvim_clear_autocmds({ group = group })
                         end
-                        return err
-                    end
-                end
-
-                table.insert(adapters, proxy)
+                    end,
+                })
             end
-
-            -- Always add the maintained neotest-rust adapter as fallback
-            local ok_nr, neotest_rust = pcall(require, "neotest-rust")
-            if ok_nr and neotest_rust then
-                table.insert(adapters, neotest_rust)
-            end
-
-            require("neotest").setup {
-                adapters = adapters,
-                log_level = vim.log.levels.ERROR,
-                quickfix = { enabled = false },
-                -- Don't open summary/output automatically; mappings handle UI
-                summary = { open = false },
-                output = { enabled = true, open_on_run = false },
-                icons = { running = "", passed = "", failed = "", skipped = "" },
-            }
 
             -- Note: keymaps for neotest are intentionally not set here to preserve
             -- existing mappings defined elsewhere in the configuration.
