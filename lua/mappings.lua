@@ -61,12 +61,26 @@ map("n", "<leader>to", function()
     end
 end, { desc = "Show Test Output" })
 map("n", "<leader>tS", function()
-    local ok = pcall(function()
-        require("neotest").summary.toggle()
-    end)
+    local ok, summary = pcall(require, "neotest.summary")
     if not ok then
         vim.schedule(function()
-            vim.notify("neotest: failed to toggle summary", vim.log.levels.WARN)
+            vim.notify("neotest: summary module not available", vim.log.levels.WARN)
         end)
+        return
     end
-end, { desc = "Toggle Test Summary" })
+
+    -- Try to open the summary and then move it to a right vertical panel like neo-tests
+    local opened, err = pcall(summary.open, { enter = true })
+    if not opened then
+        vim.schedule(function()
+            vim.notify("neotest: failed to open summary: " .. tostring(err), vim.log.levels.WARN)
+        end)
+        return
+    end
+
+    -- Move the newly opened summary window to the far right and set width
+    vim.defer_fn(function()
+        pcall(vim.cmd, "wincmd L")
+        pcall(vim.cmd, "vertical resize 45")
+    end, 30)
+end, { desc = "Toggle Test Summary (right panel)" })
