@@ -4,14 +4,12 @@ local options = {
     ["javascript"] = { "prettier" },
     ["html"] = { "prettier" },
     ["json"] = { "prettier" },
+    ["toml"] = { "taplo" },
     ["lua"] = { "stylua" },
+    rust = { "rustfmt", lsp_format = "fallback" },
     ["markdown"] = { "prettier" },
     ["yaml"] = { "prettier" },
     ["jsx"] = { "prettier" },
-    rust = { "rust-fmt" },
-    c_cpp = { "clang-format" },
-    c = { "clang-format" },
-    cpp = { "clang-format" },
   },
   formatters = {
     ["clang-format"] = {
@@ -26,9 +24,9 @@ local options = {
       },
     },
   },
-  format_on_save = {
+  format_after_save = {
     -- These options will be passed to conform.format()
-    timeout_ms = 300,
+    timeout_ms = 2000,
     lsp_fallback = true,
   },
 }
