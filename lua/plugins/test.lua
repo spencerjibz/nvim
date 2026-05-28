@@ -26,8 +26,11 @@ return {
                 adapters = adapters,
                 log_level = vim.log.levels.ERROR,
                 quickfix = { enabled = false },
-                summary = { open = true },
-                output = { enabled = true, open_on_run = true },
+                -- Avoid automatically opening the summary (some neotest versions
+                -- may have a broken window opener in this environment)
+                summary = { open = false },
+                -- Don't open output automatically to avoid window/open issues
+                output = { enabled = true, open_on_run = false },
                 icons = { running = "", passed = "", failed = "", skipped = "" },
             }
 

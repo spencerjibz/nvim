@@ -51,8 +51,22 @@ map("n", "<leader>ts", function()
     require("neotest").run.stop()
 end, { desc = "Stop Running Tests" })
 map("n", "<leader>to", function()
-    require("neotest").output.open { enter = true }
+    local ok = pcall(function()
+        require("neotest").output.open { enter = true }
+    end)
+    if not ok then
+        vim.schedule(function()
+            vim.notify("neotest: failed to open output", vim.log.levels.WARN)
+        end)
+    end
 end, { desc = "Show Test Output" })
 map("n", "<leader>tS", function()
-    require("neotest").summary.toggle()
+    local ok = pcall(function()
+        require("neotest").summary.toggle()
+    end)
+    if not ok then
+        vim.schedule(function()
+            vim.notify("neotest: failed to toggle summary", vim.log.levels.WARN)
+        end)
+    end
 end, { desc = "Toggle Test Summary" })
