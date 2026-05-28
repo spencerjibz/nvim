@@ -41,14 +41,6 @@ map("n", "<M-J>", "<cmd> cnext<CR>")
 map("n", "<M-K>", "<cmd> cprev<CR>")
 -- Neo tests mappings (safe with error handling)
 map("n", "<leader>tr", function()
-    -- Ensure neotest is configured to use neotest-rust adapter to avoid rustaceanvim adapter crashes
-    local ok_setup = pcall(function()
-        local ok_rust, neotest_rust = pcall(require, "neotest-rust")
-        if ok_rust and neotest_rust then
-            pcall(require("neotest").setup, { adapters = { neotest_rust } })
-        end
-    end)
-
     local ok = pcall(function()
         require("neotest").run.run()
     end)
@@ -59,14 +51,6 @@ map("n", "<leader>tr", function()
     end
 end, { desc = "Run Nearest Test" })
 map("n", "<leader>tf", function()
-    -- Ensure neotest uses neotest-rust
-    pcall(function()
-        local ok_rust, neotest_rust = pcall(require, "neotest-rust")
-        if ok_rust and neotest_rust then
-            pcall(require("neotest").setup, { adapters = { neotest_rust } })
-        end
-    end)
-
     local ok = pcall(function()
         require("neotest").run.run(vim.fn.expand "%")
     end)

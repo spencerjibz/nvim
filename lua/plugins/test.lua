@@ -14,18 +14,10 @@ return {
         config = function()
             local adapters = {}
 
-            -- Prefer the dedicated neotest-rust adapter (stable and maintained)
+            -- Use the maintained neotest-rust adapter only
             local ok_rust, neotest_rust = pcall(require, "neotest-rust")
             if ok_rust and neotest_rust then
                 table.insert(adapters, neotest_rust)
-            end
-
-            -- Fall back to rustaceanvim adapter only if available and seems healthy
-            local ok_ra, ra_adapter = pcall(require, "rustaceanvim.neotest")
-            if ok_ra and ra_adapter and type(ra_adapter.results) == "function" then
-                -- schedule any UI-calling results function
-                ra_adapter.results = vim.schedule_wrap(ra_adapter.results)
-                table.insert(adapters, ra_adapter)
             end
 
             require("neotest").setup {
