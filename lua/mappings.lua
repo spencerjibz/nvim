@@ -78,21 +78,13 @@ map("n", "<leader>tS", function()
         summary_mod = require("neotest.summary")
     end)
     if not ok or not summary_mod then
-        pcall(function()
-            local ok_lazy, lazy = pcall(require, "lazy")
-            if ok_lazy and lazy and lazy.load then
-                lazy.load({ plugins = { "nvim-neotest/neotest", "rouge8/neotest-rust" } })
-            end
+        -- neotest or its adapters are not installed/loaded. Inform the user.
+        vim.schedule(function()
+            vim.notify(
+            "neotest: plugin not installed or loaded. Run ':Lazy sync' or install 'nvim-neotest/neotest' and 'rouge8/neotest-rust'",
+                vim.log.levels.WARN)
         end)
-        ok = pcall(function()
-            summary_mod = require("neotest.summary")
-        end)
-        if not ok or not summary_mod then
-            vim.schedule(function()
-                vim.notify("neotest: summary module not available (failed to lazy-load)", vim.log.levels.WARN)
-            end)
-            return
-        end
+        return
     end
 
     local opened, err = pcall(summary_mod.open, { enter = true })
