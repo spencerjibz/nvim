@@ -17,7 +17,7 @@ map("n", "<leader>bl", ":BaconList<CR>", { desc = "List Bacon Errors" })
 map("n", "<leader>bt", ":BaconToggle<CR>", { desc = "Toggle Bacon" })
 
 map("n", "<leader>rcu", function()
-  require("crates").upgrade_all_crates()
+    require("crates").upgrade_all_crates()
 end, { desc = "Update all dependencies in toml file" })
 
 --- key mappings for rust;
@@ -27,7 +27,7 @@ end, { desc = "Update all dependencies in toml file" })
 map("n", "<Leader>o", "o<Esc>^Da")
 map("n", "<Leader>O", "O<Esc>^Da")
 map("n", "<leader>me", function()
-  vim.cmd.RustLsp "expandMacro"
+    vim.cmd.RustLsp "expandMacro"
 end, { desc = "Rust: Expand Macro" })
 
 -- New tab
@@ -40,16 +40,19 @@ map("n", "<s-tab>", ":tabprev<Return>")
 -- Mappings for quick fix list
 map("n", "<M-J>", "<cmd> cnext<CR>")
 map("n", "<M-K>", "<cmd> cprev<CR>")
--- Neo tests mappings
-map("n", "<leader>tr", function()
-  require("neotest").run.run()
+-- Neo tests mappings (kept consistent with lua/plugins/test.lua)
+map("n", "<leader>tn", function()
+    require("neotest").run.run()
 end, { desc = "Run Nearest Test" })
 map("n", "<leader>tf", function()
-  require("neotest").run.run(vim.fn.expand "%")
+    require("neotest").run.run(vim.fn.expand "%")
 end, { desc = "Run File Tests" })
 map("n", "<leader>ts", function()
-  require("neotest").summary.toggle()
-end, { desc = "Toggle Test Summary" })
+    require("neotest").run.stop()
+end, { desc = "Stop Running Tests" })
 map("n", "<leader>to", function()
-  require("neotest").output.open { enter = true }
+    require("neotest").output.open { enter = true }
 end, { desc = "Show Test Output" })
+map("n", "<leader>tS", function()
+    require("neotest").summary.toggle()
+end, { desc = "Toggle Test Summary" })
