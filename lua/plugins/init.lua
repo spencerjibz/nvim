@@ -4,7 +4,7 @@ return {
     -- GitHub Copilot
     {
         "zbirenbaum/copilot.lua",
-        cmd = "Copilot",     -- lazy-load on Copilot command
+        cmd = "Copilot",         -- lazy-load on Copilot command
         build = ":Copilot auth", -- automatically run auth if needed
         event = "InsertEnter",
         config = function()
@@ -184,15 +184,27 @@ return {
                     end,
                     default_settings = {
                         ["rust-analyzer"] = {
-                            cargo = { allFeatures = true },
+                            cargo = {
+                                allFeatures = true,
+                                loadOutDirsFromCheck = true,
+                                runBuildScripts = true,
+                            },
+                            procMacro = { enable = true },
                             checkOnSave = true,
-                            diagnostics = { experimental = { enable = true } },
+                            diagnostics = { enable = true, experimental = { enable = true } },
+                            completion = {
+                                postfix = { enable = true },
+                                autoimport = { enable = true },
+                            },
+                            lens = { enable = true },
+                            hoverActions = { enable = true },
                             inlayHints = {
                                 bindingModeHints = { enable = true },
                                 closureReturnTypeHints = { enable = "always" },
                                 lifetimeElisionHints = { enable = "skip_trivial", useParameterNames = true },
                                 maxLength = nil,
                             },
+                            files = { excludeDirs = { "target" } },
                         },
                     },
                     dap = {
