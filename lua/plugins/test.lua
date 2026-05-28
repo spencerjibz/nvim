@@ -11,26 +11,50 @@ return {
             "mrcjkb/rustaceanvim",
         },
         config = function()
-            -- Build adapter list dynamically so missing adapters don't error
-            local adapters = {}
-            -- Directly require the rustaceanvim neotest adapter so it's always registered
-            local rust_adapter = require("rustaceanvim.neotest")
-            if rust_adapter then
-                -- Workaround: wrap `results` to avoid calling notify/echo in a fast event context
-                if type(rust_adapter.results) == "function" then
-                    rust_adapter.results = vim.schedule_wrap(rust_adapter.results)
-                end
-                table.insert(adapters, rust_adapter)
-            end
-
-            require("neotest").setup {
-                adapters = adapters,
+            -- Base configuration for neotest; adapters will be appended when available
+            local base_config = {
+                adapters = {},
                 log_level = vim.log.levels.ERROR,
                 quickfix = { enabled = false },
                 summary = { open = true },
                 output = { enabled = true, open_on_run = true },
                 icons = { running = "", passed = "", failed = "", skipped = "" },
             }
+
+            -- Try to require the rust adapter now; if it's not available yet, register
+            -- an autocmd to try again when Rust files are opened.
+            local ok, rust_adapter = pcall(require, "rustaceanvim.neotest")
+            if ok and rust_adapter then
+                if type(rust_adapter.results) == "function" then
+                    rust_adapter.results = vim.schedule_wrap(rust_adapter.results)
+                end
+                table.insert(base_config.adapters, rust_adapter)
+                require("neotest").setup(base_config)
+            else
+                -- First call setup without the rust adapter
+                require("neotest").setup(base_config)
+
+                -- Attempt to load the rust adapter later when Rust files are in use
+                local group = vim.api.nvim_create_augroup("NeotestRustAdapter", { clear = true })
+                vim.api.nvim_create_autocmd({ "BufReadPost", "FileType" }, {
+                    pattern = "*.rs",
+                    group = group,
+                    callback = function()
+                        local ok2, rust_adapter2 = pcall(require, "rustaceanvim.neotest")
+                        if ok2 and rust_adapter2 then
+                            if type(rust_adapter2.results) == "function" then
+                                rust_adapter2.results = vim.schedule_wrap(rust_adapter2.results)
+                            end
+                            -- Reconfigure neotest to include the rust adapter
+                            local current = require("neotest").config or {}
+                            local adapters = current.adapters or {}
+                            table.insert(adapters, rust_adapter2)
+                            require("neotest").setup(vim.tbl_extend("force", current, { adapters = adapters }))
+                            vim.api.nvim_clear_autocmds({ group = group })
+                        end
+                    end,
+                })
+            end
 
             -- Note: keymaps for neotest are intentionally not set here to preserve
             -- existing mappings defined elsewhere in the configuration.
