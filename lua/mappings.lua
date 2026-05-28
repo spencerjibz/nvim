@@ -40,16 +40,26 @@ map("n", "<s-tab>", ":tabprev<Return>")
 -- Mappings for quick fix list
 map("n", "<M-J>", "<cmd> cnext<CR>")
 map("n", "<M-K>", "<cmd> cprev<CR>")
--- Neo tests mappings (kept consistent with lua/plugins/test.lua)
+
+-- Neotest key mappings
 map("n", "<leader>tn", function()
-    require("neotest").run.run()
+    pcall(function()
+        require("neotest").run.run()
+    end)
 end, { desc = "Run Nearest Test" })
+
 map("n", "<leader>tf", function()
-    require("neotest").run.run(vim.fn.expand "%")
+    pcall(function()
+        require("neotest").run.run(vim.fn.expand "%")
+    end)
 end, { desc = "Run File Tests" })
+
 map("n", "<leader>ts", function()
-    require("neotest").run.stop()
+    pcall(function()
+        require("neotest").run.stop()
+    end)
 end, { desc = "Stop Running Tests" })
+
 map("n", "<leader>to", function()
     local ok = pcall(function()
         require("neotest").output.open { enter = true }
@@ -60,20 +70,24 @@ map("n", "<leader>to", function()
         end)
     end
 end, { desc = "Show Test Output" })
+
 map("n", "<leader>tS", function()
-    local ok, summary = pcall(require, "neotest.summary")
-    if not ok then
-        -- Attempt to lazily load neotest plugins then retry
+    -- Open summary in right panel; try to lazy-load neotest if needed
+    local summary_mod
+    local ok = pcall(function()
+        summary_mod = require("neotest.summary")
+    end)
+    if not ok or not summary_mod then
         pcall(function()
             local ok_lazy, lazy = pcall(require, "lazy")
             if ok_lazy and lazy and lazy.load then
                 lazy.load({ plugins = { "nvim-neotest/neotest", "rouge8/neotest-rust" } })
             end
         end)
-
-        -- try requiring again after allowing lazy to load
-        ok, summary = pcall(require, "neotest.summary")
-        if not ok then
+        ok = pcall(function()
+            summary_mod = require("neotest.summary")
+        end)
+        if not ok or not summary_mod then
             vim.schedule(function()
                 vim.notify("neotest: summary module not available (failed to lazy-load)", vim.log.levels.WARN)
             end)
@@ -81,8 +95,7 @@ map("n", "<leader>tS", function()
         end
     end
 
-    -- Try to open the summary and then move it to a right vertical panel like neo-tests
-    local opened, err = pcall(summary.open, { enter = true })
+    local opened, err = pcall(summary_mod.open, { enter = true })
     if not opened then
         vim.schedule(function()
             vim.notify("neotest: failed to open summary: " .. tostring(err), vim.log.levels.WARN)
@@ -95,4 +108,4 @@ map("n", "<leader>tS", function()
         pcall(vim.cmd, "wincmd L")
         pcall(vim.cmd, "vertical resize 45")
     end, 80)
-end, { desc = "Toggle Test Summary (right panel)" })
+end, { desc = "Open Test Summary (right panel)" })
