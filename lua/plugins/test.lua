@@ -15,6 +15,10 @@ return {
             local adapters = {}
             local ok, rust_adapter = pcall(require, "rustaceanvim.neotest")
             if ok and rust_adapter then
+                -- Workaround: wrap `results` to avoid calling notify/echo in a fast event context
+                if type(rust_adapter.results) == "function" then
+                    rust_adapter.results = vim.schedule_wrap(rust_adapter.results)
+                end
                 table.insert(adapters, rust_adapter)
             end
 
