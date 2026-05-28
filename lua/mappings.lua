@@ -63,10 +63,22 @@ end, { desc = "Show Test Output" })
 map("n", "<leader>tS", function()
     local ok, summary = pcall(require, "neotest.summary")
     if not ok then
-        vim.schedule(function()
-            vim.notify("neotest: summary module not available", vim.log.levels.WARN)
+        -- Attempt to lazily load neotest plugins then retry
+        pcall(function()
+            local ok_lazy, lazy = pcall(require, "lazy")
+            if ok_lazy and lazy and lazy.load then
+                lazy.load({ plugins = { "nvim-neotest/neotest", "rouge8/neotest-rust" } })
+            end
         end)
-        return
+
+        -- try requiring again after allowing lazy to load
+        ok, summary = pcall(require, "neotest.summary")
+        if not ok then
+            vim.schedule(function()
+                vim.notify("neotest: summary module not available (failed to lazy-load)", vim.log.levels.WARN)
+            end)
+            return
+        end
     end
 
     -- Try to open the summary and then move it to a right vertical panel like neo-tests
@@ -82,5 +94,5 @@ map("n", "<leader>tS", function()
     vim.defer_fn(function()
         pcall(vim.cmd, "wincmd L")
         pcall(vim.cmd, "vertical resize 45")
-    end, 30)
+    end, 80)
 end, { desc = "Toggle Test Summary (right panel)" })
