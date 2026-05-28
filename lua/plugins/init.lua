@@ -212,17 +212,6 @@ return {
                     },
                 },
             }
-
-            -- Workaround: rustaceanvim's neotest runner calls notify/echo in a fast event
-            -- context causing `nvim_echo must not be called in a fast event context`.
-            -- Wrap the results function with `vim.schedule_wrap` so UI calls are scheduled
-            -- on the main loop.
-            pcall(function()
-                local ok, neotest_mod = pcall(require, "rustaceanvim.neotest")
-                if ok and type(neotest_mod.results) == "function" then
-                    neotest_mod.results = vim.schedule_wrap(neotest_mod.results)
-                end
-            end)
         end,
     },
 
