@@ -39,16 +39,44 @@ map("n", "<s-tab>", ":tabprev<Return>")
 -- Mappings for quick fix list
 map("n", "<M-J>", "<cmd> cnext<CR>")
 map("n", "<M-K>", "<cmd> cprev<CR>")
--- Neo tests mappings
+-- Neo tests mappings (safe with error handling)
 map("n", "<leader>tr", function()
-    require("neotest").run.run()
+    local ok = pcall(function()
+        require("neotest").run.run()
+    end)
+    if not ok then
+        vim.schedule(function()
+            vim.notify("neotest: failed to run nearest test", vim.log.levels.WARN)
+        end)
+    end
 end, { desc = "Run Nearest Test" })
 map("n", "<leader>tf", function()
-    require("neotest").run.run(vim.fn.expand "%")
+    local ok = pcall(function()
+        require("neotest").run.run(vim.fn.expand "%")
+    end)
+    if not ok then
+        vim.schedule(function()
+            vim.notify("neotest: failed to run file tests", vim.log.levels.WARN)
+        end)
+    end
 end, { desc = "Run File Tests" })
 map("n", "<leader>ts", function()
-    require("neotest").summary.toggle()
+    local ok = pcall(function()
+        require("neotest").summary.toggle()
+    end)
+    if not ok then
+        vim.schedule(function()
+            vim.notify("neotest: failed to toggle summary", vim.log.levels.WARN)
+        end)
+    end
 end, { desc = "Toggle Test Summary" })
 map("n", "<leader>to", function()
-    require("neotest").output.open { enter = true }
+    local ok = pcall(function()
+        require("neotest").output.open { enter = true }
+    end)
+    if not ok then
+        vim.schedule(function()
+            vim.notify("neotest: failed to open output", vim.log.levels.WARN)
+        end)
+    end
 end, { desc = "Show Test Output" })
