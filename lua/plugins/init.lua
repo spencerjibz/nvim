@@ -72,7 +72,7 @@ return {
     {
         "nvim-telescope/telescope.nvim",
         event = "VimEnter",
-        version = "*",
+        branch = "master",
         dependencies = {
             "nvim-lua/plenary.nvim",
             {
